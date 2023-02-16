@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  db:
+    container_name: one_for_all_db
+    image: mysql:8.0.23
+    restart: always
+    ports:
+      - 3002:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+networks:
+  default:
+    name: one_for_all_net
