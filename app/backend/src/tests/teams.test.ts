@@ -1,7 +1,6 @@
 import * as sinon from 'sinon';
 import * as chai from 'chai';
-
-//@ts-ignore
+// @ts-ignore
 import chaiHttp = require('chai-http');
 import { App } from '../app';
 import TeamsModel from '../database/models/Teams.Model';
@@ -13,14 +12,14 @@ chai.use(chaiHttp);
 const { app } = new App();
 const { expect } = chai;
 
-describe('Checking Route /teams', () => {
+describe('Valida a rota /teams', () => {
   let chaiHttpResponse: Response;
 
   afterEach(function () {
     sinon.restore();
   });
 
-  it('Get return all teams', async () => {
+  it('Valida se retorna todos os times', async () => {
     sinon.stub(TeamsModel, 'findAll').resolves(teamsMock as TeamsModel[]);
 
     const chaiHttpResponse = await chai.request(app).get('/teams');
@@ -29,7 +28,7 @@ describe('Checking Route /teams', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal(teamsMock);
   });
 
-  it('Get return one team', async () => {
+  it('Valida se retorna apenas um time', async () => {
     sinon.stub(TeamsModel, 'findByPk').resolves(homeTeamMock as TeamsModel);
 
     const chaiHttpResponse = await chai.request(app).get('/teams/3');
@@ -38,7 +37,7 @@ describe('Checking Route /teams', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal(homeTeamMock);
   });
 
-  it('Team not found', async () => {
+  it('Valida se o time existe', async () => {
     sinon.stub(TeamsModel, 'findByPk').resolves(null);
 
     const chaiHttpResponse = await chai.request(app).get('/teams/99');

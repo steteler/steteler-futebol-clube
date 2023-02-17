@@ -23,14 +23,14 @@ chai.use(chaiHttp);
 const { app } = new App();
 const { expect } = chai;
 
-describe('Checking Route /matches', () => {
+describe('Valida a rota /matches', () => {
   let chaiHttpResponse: Response;
 
   afterEach(function () {
     sinon.restore();
   });
 
-  it('Get return all matches', async () => {
+  it('Valida o retorno de todas as matches', async () => {
     sinon
       .stub(MatchesModel, 'findAll')
       .resolves(matchesMock as unknown as MatchesModel[]);
@@ -41,7 +41,7 @@ describe('Checking Route /matches', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal(matchesMock);
   });
 
-  it('Get all inProgress matches', async () => {
+  it('Valida todas matches in progress', async () => {
     sinon
       .stub(MatchesModel, 'findAll')
       .resolves(matchesInProgresMock as unknown as MatchesModel[]);
@@ -54,7 +54,7 @@ describe('Checking Route /matches', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal(matchesInProgresMock);
   });
 
-  it('user can insert a new match', async () => {
+  it('Valida se é possível inserir nova match', async () => {
     sinon
       .stub(jwt, 'verify')
       .resolves({ email: 'admin@admin.com', password: 'secret_admin' });
@@ -76,7 +76,7 @@ describe('Checking Route /matches', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal(matchCreated);
   });
 
-  it("'s not possible to insert without a validation token", async () => {
+  it("Valida se é possível inserir com um token inválido", async () => {
     sinon.stub(jwt, 'verify').throws(Error);
     const chaiHttpResponse = await chai
       .request(app)
@@ -89,7 +89,7 @@ describe('Checking Route /matches', () => {
     });
   });
 
-  it("'s not possible to insert match with the same team two times", async () => {
+  it("Valida se é possível inserir dois times iguais", async () => {
     sinon
       .stub(jwt, 'verify')
       .resolves({ email: 'admin@admin.com', password: 'secret_admin' });
@@ -106,7 +106,7 @@ describe('Checking Route /matches', () => {
     });
   });
 
-  it("'s not possible to insert match with team id invalid", async () => {
+  it("Valida se é possível inserir um time com id inválido", async () => {
     sinon
       .stub(jwt, 'verify')
       .resolves({ email: 'admin@admin.com', password: 'secret_admin' });
@@ -123,7 +123,7 @@ describe('Checking Route /matches', () => {
     });
   });
 
-  it('returns message "Finished" with status 200', async () => {
+  it('Valida se o match é finalizado', async () => {
     sinon.stub(MatchesModel, 'update').resolves();
 
     const chaiHttpResponse = await chai.request(app).patch('/matches/1/finish');
@@ -132,7 +132,7 @@ describe('Checking Route /matches', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal({ message: 'Finished' });
   });
 
-  it('updates goals of a match', async () => {
+  it('Valida se é possível atualizar os gols do match', async () => {
     sinon.stub(MatchesModel, 'update').resolves();
 
     const chaiHttpResponse = await chai.request(app).patch('/matches/1').send({

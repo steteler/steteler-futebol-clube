@@ -28,7 +28,7 @@ describe('Checking Route /login', () => {
     sinon.restore();
   });
 
-  it('User login is successful', async () => {
+  it('Valida se foi feito login com sucesso', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);
@@ -44,7 +44,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal({ token: validToken });
   });
 
-  it('User with blank "password" field', async () => {
+  it('Valida se o campo senha foi preenchido', async () => {
     const chaiHttpResponse = await chai
       .request(app)
       .post('/login')
@@ -54,7 +54,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal({ message: errorBlankFields });
   });
 
-  it('User with an invalid password', async () => {
+  it('Valida se a senha é válida', async () => {
     const chaiHttpResponse = await chai
       .request(app)
       .post('/login')
@@ -68,7 +68,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('User without a valid token', async () => {
+  it('Valida o token do usuário', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);
@@ -85,7 +85,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('User with a invalid token', async () => {
+  it('Valida se o token é inválido', async () => {
     sinon.stub(jwt, 'verify').throws(Error);
 
     const chaiHttpResponse = await chai
@@ -99,7 +99,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('User Valid token not exists', async () => {
+  it('Valida se existe um token válido', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null);
     sinon.stub(jwt, 'verify').resolves(validToken);
 
@@ -111,7 +111,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.status).to.be.equal(401);
   });
 
-  it('User with a valid token', async () => {
+  it('Valida se o usuario tem um token válido', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);

@@ -1,57 +1,131 @@
 import * as sinon from 'sinon';
 import * as chai from 'chai';
-import LeaderboardService from '../services/leaderboard.service';
-import {
-  homeLeaderBoardMock,
-  awayLeaderBoardMock,
-  getAllMock,
-} from './mocks/leaderboards.mock';
-
 // @ts-ignore
 import chaiHttp = require('chai-http');
+import {
+  completeUser,
+  failedAuthLogin,
+  invalidToken,
+  missingInfoLogin,
+  successAuthLogin,
+  validToken,
+}
+from './mocks/user.mock';
 import { App } from '../app';
+import UserModel from '../database/models/User.Model';
 import { Response } from 'superagent';
-import { finishedMatches } from './mocks/matches.mock';
+import * as jwt from 'jsonwebtoken';
+import { errorBlankFields, errorEmailPasswordInvalid } from '../utils/errorsMessage';
 
 chai.use(chaiHttp);
 
 const { app } = new App();
 const { expect } = chai;
 
-describe('Checking Route /leaderboard', () => {
+describe('Valida a rota /login', () => {
   let chaiHttpResponse: Response;
 
   afterEach(function () {
     sinon.restore();
   });
 
-  it('/leaderboard/home is working as intended', async () => {
+  it('Valida login', async () => {
     sinon
-      .stub(LeaderboardService, 'getAllHome')
-      .resolves(homeLeaderBoardMock as any);
+      .stub(UserModel, 'findOne')
+      .resolves(completeUser as unknown as UserModel);
 
-    const chaiHttpResponse = await chai.request(app).get('/leaderboard/home');
+    sinon.stub(jwt, 'sign').resolves(validToken);
+
+    const chaiHttpResponse = await chai
+      .request(app)
+      .post('/login')
+      .send(successAuthLogin);
+
     expect(chaiHttpResponse.status).to.be.equal(200);
-    expect(chaiHttpResponse.body).to.be.deep.equal(homeLeaderBoardMock);
+    expect(chaiHttpResponse.body).to.be.deep.equal({ token: validToken });
   });
 
-  it('/leaderboard/away is working as intended', async () => {
-    sinon
-      .stub(LeaderboardService, 'getAllAway')
-      .resolves(awayLeaderBoardMock as any);
+  it('Valida espaços vazios login', async () => {
+    const chaiHttpResponse = await chai
+      .request(app)
+      .post('/login')
+      .send(missingInfoLogin);
 
-    const chaiHttpResponse = await chai.request(app).get('/leaderboard/away');
-    expect(chaiHttpResponse.status).to.be.equal(200);
-    expect(chaiHttpResponse.body).to.be.deep.equal(awayLeaderBoardMock);
+    expect(chaiHttpResponse.status).to.be.equal(400);
+    expect(chaiHttpResponse.body).to.be.deep.equal({ message: errorBlankFields });
   });
 
-  it('/leaderboard/away is working as intended', async () => {
-    sinon
-      .stub(LeaderboardService, 'getAll')
-      .resolves(getAllMock as any);
+  it('Valida senha inválida', async () => {
+    const chaiHttpResponse = await chai
+      .request(app)
+      .post('/login')
+      .send(failedAuthLogin);
 
-    const chaiHttpResponse = await chai.request(app).get('/leaderboard');
+    expect(chaiHttpResponse.status).to.be.equal(
+      errorEmailPasswordInvalid.status
+    );
+    expect(chaiHttpResponse.body).to.be.deep.equal({
+      message: errorEmailPasswordInvalid.message,
+    });
+  });
+
+  it('Valida se token é válido', async () => {
+    sinon
+      .stub(UserModel, 'findOne')
+      .resolves(completeUser as unknown as UserModel);
+    sinon.stub(jwt, 'verify').resolves(invalidToken);
+
+    const chaiHttpResponse = await chai
+      .request(app)
+      .get('/login/validate')
+      .send();
+
+    expect(chaiHttpResponse.status).to.be.equal(401);
+    expect(chaiHttpResponse.body).to.be.deep.equal({
+      message: 'Token not found',
+    });
+  });
+
+  it('Valida se token é inválido', async () => {
+    sinon.stub(jwt, 'verify').throws(Error);
+
+    const chaiHttpResponse = await chai
+      .request(app)
+      .get('/login/validate')
+      .set({ authorization: invalidToken });
+
+    expect(chaiHttpResponse.status).to.be.equal(401);
+    expect(chaiHttpResponse.body).to.be.deep.equal({
+      message: 'Token must be a valid token',
+    });
+  });
+
+  it('Valida se o token não existe', async () => {
+    sinon.stub(UserModel, 'findOne').resolves(null);
+    sinon.stub(jwt, 'verify').resolves(validToken);
+
+    const chaiHttpResponse = await chai
+      .request(app)
+      .get('/login/validate')
+      .set({ authorization: validToken });
+
+    expect(chaiHttpResponse.status).to.be.equal(401);
+  });
+
+  it('Valida se o token existe', async () => {
+    sinon
+      .stub(UserModel, 'findOne')
+      .resolves(completeUser as unknown as UserModel);
+    sinon.stub(jwt, 'verify').resolves(validToken);
+
+    const chaiHttpResponse = await chai
+      .request(app)
+      .get('/login/validate')
+      .set({ authorization: validToken });
+
     expect(chaiHttpResponse.status).to.be.equal(200);
-    expect(chaiHttpResponse.body).to.be.deep.equal(getAllMock);
+    expect(chaiHttpResponse.body).to.be.deep.equal({
+      role: 'user',
+    });
   });
 });
