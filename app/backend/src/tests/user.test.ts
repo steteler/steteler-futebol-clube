@@ -1,6 +1,7 @@
 import * as sinon from 'sinon';
 import * as chai from 'chai';
-import chaiHttp from 'chai-http';
+// @ts-ignore
+import chaiHttp = require('chai-http');
 import {
   completeUser,
   failedAuthLogin,
@@ -27,7 +28,7 @@ describe('Checking Route /login', () => {
     sinon.restore();
   });
 
-  it('Valida se foi feito login com sucesso', async () => {
+  it('User login is successful', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);
@@ -43,7 +44,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal({ token: validToken });
   });
 
-  it('Valida se o campo senha foi preenchido', async () => {
+  it('User with blank "password" field', async () => {
     const chaiHttpResponse = await chai
       .request(app)
       .post('/login')
@@ -53,7 +54,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.body).to.be.deep.equal({ message: errorBlankFields });
   });
 
-  it('Valida se a senha é válida', async () => {
+  it('User with an invalid password', async () => {
     const chaiHttpResponse = await chai
       .request(app)
       .post('/login')
@@ -67,7 +68,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('Valida o token do usuário', async () => {
+  it('User without a valid token', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);
@@ -84,7 +85,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('Valida se o token é inválido', async () => {
+  it('User with a invalid token', async () => {
     sinon.stub(jwt, 'verify').throws(Error);
 
     const chaiHttpResponse = await chai
@@ -98,7 +99,7 @@ describe('Checking Route /login', () => {
     });
   });
 
-  it('Valida se existe um token válido', async () => {
+  it('User Valid token not exists', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null);
     sinon.stub(jwt, 'verify').resolves(validToken);
 
@@ -110,7 +111,7 @@ describe('Checking Route /login', () => {
     expect(chaiHttpResponse.status).to.be.equal(401);
   });
 
-  it('Valida se o usuario tem um token válido', async () => {
+  it('User with a valid token', async () => {
     sinon
       .stub(UserModel, 'findOne')
       .resolves(completeUser as unknown as UserModel);
